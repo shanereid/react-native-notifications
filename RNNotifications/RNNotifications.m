@@ -174,6 +174,10 @@ RCT_EXPORT_MODULE()
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
++ (BOOL)requiresMainQueueSetup {
+    return YES;
+}
+
 - (void)setBridge:(RCTBridge *)bridge
 {
     _bridge = bridge;
@@ -576,7 +580,7 @@ RCT_EXPORT_METHOD(consumeBackgroundQueue)
 
     // Push background notifications to JS
     [[RNNotificationsBridgeQueue sharedInstance] consumeNotificationsQueue:^(NSDictionary* notification) {
-        [RNNotifications didReceiveRemoteNotification:notification];
+        [RNNotifications didReceiveNotificationOnBackgroundState:notification];
     }];
 
     // Push opened local notifications
@@ -636,14 +640,7 @@ RCT_EXPORT_METHOD(cancelAllLocalNotifications)
 
 RCT_EXPORT_METHOD(isRegisteredForRemoteNotifications:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject)
 {
-    BOOL ans;
-
-    if (TARGET_IPHONE_SIMULATOR) {
-        ans = [[[UIApplication sharedApplication] currentUserNotificationSettings] types] != 0;
-    }
-    else {
-        ans = [[UIApplication sharedApplication] isRegisteredForRemoteNotifications];
-    }
+    BOOL ans = [[[UIApplication sharedApplication] currentUserNotificationSettings] types] != 0;
     resolve(@(ans));
 }
 
